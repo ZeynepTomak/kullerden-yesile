@@ -210,7 +210,7 @@ with tab2:
 
 trend.index = trend.index.astype(str)
 st.line_chart(trend)
-    st.dataframe(trend)
+st.dataframe(trend)
 
 # MODEL
 with tab3:
