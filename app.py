@@ -137,19 +137,29 @@ with tab1:
         value = float(row[f"NDVI_{year}"])
         color = scale(value)
 
+        
         folium.CircleMarker(
-            [row["enlem"], row["boylam"]],
-            radius=5,
-            color=color,
+            location=[
+                row["enlem"],
+                row["boylam"]
+            ],
+            radius=9,
+            color="#7c3aed",
+            weight=3,
             fill=True,
-            fill_color=color,
-            fill_opacity=0.85,
-            popup=(
-                f"Yıl: {year}<br>"
-                f"NDVI: {value:.4f}<br>"
-                f"Etki sınıfı: {int(row['etki_sinifi'])}"
+            fill_color="#7c3aed",
+            fill_opacity=0.25,
+            tooltip="Random Forest tahmini",
+            popup=folium.Popup(
+                f"<b>2026 Random Forest</b><br>"
+                f"Gercek NDVI: {row['NDVI_hedef']:.4f}<br>"
+                f"Tahmin NDVI: {row['NDVI_tahmin']:.4f}<br>"
+                f"Mutlak hata: {row['mutlak_hata']:.4f}<br>"
+                f"Etki sinifi: {int(row['sinif'])}",
+                max_width=260
             )
         ).add_to(m)
+
 
     if show_pred and year == 2026:
         subset = preds[
