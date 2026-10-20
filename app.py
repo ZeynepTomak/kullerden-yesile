@@ -89,7 +89,10 @@ tab1, tab2, tab3, tab4 = st.tabs([
 ])
 
 # HARITA
+
+# HARITA - DUZELTILMIS SURUM
 with tab1:
+
     m = folium.Map(
         location=[
             filtered["enlem"].mean(),
@@ -99,6 +102,7 @@ with tab1:
         tiles=None
     )
 
+    # CARTO harita altligi
     try:
         carto_key = st.secrets.get(
             "CARTO_API_KEY", ""
@@ -117,9 +121,8 @@ with tab1:
             attr="© OpenStreetMap contributors, © CARTO",
             name="CARTO Positron"
         ).add_to(m)
-    else:
-        st.info("CARTO anahtarı eklenmedi. Altlık harita boş.")
 
+    # NDVI renk skalasi
     scale = LinearColormap(
         [
             "#8c510a",
@@ -133,47 +136,41 @@ with tab1:
         caption="NDVI"
     )
 
-    for _, row in filtered.iterrows():
-        value = float(row[f"NDVI_{year}"])
-        color = scale(value)
+    # 1. GERCEK NDVI NOKTALARI
+    for _, point in filtered.iterrows():
 
-        
+        value = float(point[f"NDVI_{year}"])
+
+        popup_real = (
+            f"<b>Gercek NDVI</b><br>"
+            f"Yil: {year}<br>"
+            f"NDVI: {value:.4f}<br>"
+            f"Etki sinifi: "
+            f"{int(point['etki_sinifi'])}"
+        )
+
         folium.CircleMarker(
             location=[
-                row["enlem"],
-                row["boylam"]
+                point["enlem"],
+                point["boylam"]
             ],
-            radius=9,
-            color="#7c3aed",
-            weight=3,
+            radius=5,
+            color=scale(value),
             fill=True,
-            fill_color="#7c3aed",
-            fill_opacity=0.25,
-            tooltip="Random Forest tahmini",
+            fill_color=scale(value),
+            fill_opacity=0.85,
             popup=folium.Popup(
-                f"<b>2026 Random Forest</b><br>"
-                f"Gercek NDVI: {row['NDVI_hedef']:.4f}<br>"
-                f"Tahmin NDVI: {row['NDVI_tahmin']:.4f}<br>"
-                f"Mutlak hata: {row['mutlak_hata']:.4f}<br>"
-                f"Etki sinifi: {int(row['sinif'])}",
-                max_width=260
+                popup_real,
+                max_width=250
             )
         ).add_to(m)
 
-
-    # RANDOM FOREST TAHMIN NOKTALARI
+    # 2. RANDOM FOREST TAHMIN NOKTALARI
+    # Sadece secenek aktifse calisir
     if show_pred and year == 2026:
 
-        # Tahmin verilerini sec
-        subset = preds.loc[
-            preds["sinif"].isin(selected),
-            [
-                "id",
-                "sinif",
-                "NDVI_hedef",
-                "NDVI_tahmin",
-                "mutlak_hata"
-            ]
+        subset = preds[
+            preds["sinif"].isin(selected)
         ].merge(
             points[["id", "enlem", "boylam"]],
             on="id",
@@ -181,21 +178,24 @@ with tab1:
             validate="one_to_one"
         )
 
-        # Her tahmin noktasi icin isaretci
-        for _, tahmin in subset.iterrows():
+        for _, pred in subset.iterrows():
 
-            popup_text = (
-                "<b>2026 Random Forest Tahmini</b><br>"
-                f"Gercek NDVI: {tahmin['NDVI_hedef']:.4f}<br>"
-                f"Tahmin NDVI: {tahmin['NDVI_tahmin']:.4f}<br>"
-                f"Mutlak hata: {tahmin['mutlak_hata']:.4f}<br>"
-                f"Yangin etki sinifi: {int(tahmin['sinif'])}"
+            popup_prediction = (
+                "<b>Random Forest - 2026</b><br>"
+                f"Gercek NDVI: "
+                f"{pred['NDVI_hedef']:.4f}<br>"
+                f"Tahmin NDVI: "
+                f"{pred['NDVI_tahmin']:.4f}<br>"
+                f"Mutlak hata: "
+                f"{pred['mutlak_hata']:.4f}<br>"
+                f"Etki sinifi: "
+                f"{int(pred['sinif'])}"
             )
 
             folium.CircleMarker(
                 location=[
-                    tahmin["enlem"],
-                    tahmin["boylam"]
+                    pred["enlem"],
+                    pred["boylam"]
                 ],
                 radius=9,
                 color="#7c3aed",
@@ -203,25 +203,29 @@ with tab1:
                 fill=True,
                 fill_color="#7c3aed",
                 fill_opacity=0.30,
-                tooltip="Random Forest Tahmini",
+                tooltip="Random Forest tahmini",
                 popup=folium.Popup(
-                    popup_text,
+                    popup_prediction,
                     max_width=280
                 )
             ).add_to(m)
 
-    
-
-    # NDVI renk skalasini haritaya ekle
+    # 3. NDVI RENK SKALASINI EKLE
     scale.add_to(m)
 
-    # Haritayi ornek noktalarina sigdir
+    # 4. HARITA SINIRLARINI AYARLA
     m.fit_bounds([
-        [filtered["enlem"].min(), filtered["boylam"].min()],
-        [filtered["enlem"].max(), filtered["boylam"].max()]
+        [
+            filtered["enlem"].min(),
+            filtered["boylam"].min()
+        ],
+        [
+            filtered["enlem"].max(),
+            filtered["boylam"].max()
+        ]
     ])
 
-    # Haritayi Streamlit'te goster
+    # 5. STREAMLIT HARITASINI GOSTER
     st_folium(
         m,
         height=550,
@@ -230,10 +234,9 @@ with tab1:
     )
 
     st.caption(
-        "Noktalar Sentinel-2 orneklerini temsil eder; "
-        "kesintisiz uydu raster haritasi degildir."
+        "Noktalar Sentinel-2 orneklerini temsil eder. "
+        "Kesintisiz uydu raster haritasi degildir."
     )
-
 
 # IYILESME
 with tab2:
