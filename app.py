@@ -174,7 +174,12 @@ with tab1:
                 )
             ).add_to(m)
 
-    scale.add_to(m)
+    scale.add_to(m)    
+# Haritayi tum ornek noktalarina sigdir
+m.fit_bounds([
+    [filtered["enlem"].min(), filtered["boylam"].min()],
+    [filtered["enlem"].max(), filtered["boylam"].max()]
+])
     st_folium(
         m,
         height=550,
