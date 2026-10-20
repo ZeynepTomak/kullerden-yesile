@@ -161,29 +161,56 @@ with tab1:
         ).add_to(m)
 
 
+    # RANDOM FOREST TAHMIN NOKTALARI
     if show_pred and year == 2026:
-        subset = preds[
-            preds["sinif"].isin(selected)
+
+        # Tahmin verilerini sec
+        subset = preds.loc[
+            preds["sinif"].isin(selected),
+            [
+                "id",
+                "sinif",
+                "NDVI_hedef",
+                "NDVI_tahmin",
+                "mutlak_hata"
+            ]
         ].merge(
             points[["id", "enlem", "boylam"]],
             on="id",
+            how="inner",
             validate="one_to_one"
         )
 
-        for _, row in subset.iterrows():
+        # Her tahmin noktasi icin isaretci
+        for _, tahmin in subset.iterrows():
+
+            popup_text = (
+                "<b>2026 Random Forest Tahmini</b><br>"
+                f"Gercek NDVI: {tahmin['NDVI_hedef']:.4f}<br>"
+                f"Tahmin NDVI: {tahmin['NDVI_tahmin']:.4f}<br>"
+                f"Mutlak hata: {tahmin['mutlak_hata']:.4f}<br>"
+                f"Yangin etki sinifi: {int(tahmin['sinif'])}"
+            )
+
             folium.CircleMarker(
-                [row["enlem"], row["boylam"]],
-                radius=8,
+                location=[
+                    tahmin["enlem"],
+                    tahmin["boylam"]
+                ],
+                radius=9,
                 color="#7c3aed",
-                weight=2,
-                fill=False,
-                popup=(
-                    f"Gerçek: {row['NDVI_hedef']:.4f}<br>"
-                    f"Tahmin: {row['NDVI_tahmin']:.4f}<br>"
-                    f"Hata: {row['mutlak_hata']:.4f}"
+                weight=3,
+                fill=True,
+                fill_color="#7c3aed",
+                fill_opacity=0.30,
+                tooltip="Random Forest Tahmini",
+                popup=folium.Popup(
+                    popup_text,
+                    max_width=280
                 )
             ).add_to(m)
 
+    
 
     # NDVI renk skalasini haritaya ekle
     scale.add_to(m)
