@@ -174,12 +174,17 @@ with tab1:
                 )
             ).add_to(m)
 
+
+    # NDVI renk skalasini haritaya ekle
     scale.add_to(m)
-# Haritayi tum ornek noktalarina sigdir
-m.fit_bounds([
-    [filtered["enlem"].min(), filtered["boylam"].min()],
-    [filtered["enlem"].max(), filtered["boylam"].max()]
-])
+
+    # Haritayi ornek noktalarina sigdir
+    m.fit_bounds([
+        [filtered["enlem"].min(), filtered["boylam"].min()],
+        [filtered["enlem"].max(), filtered["boylam"].max()]
+    ])
+
+    # Haritayi Streamlit'te goster
     st_folium(
         m,
         height=550,
@@ -188,9 +193,10 @@ m.fit_bounds([
     )
 
     st.caption(
-        "Noktalar Sentinel-2 örneklerini temsil eder; "
-        "kesintisiz uydu raster haritası değildir."
+        "Noktalar Sentinel-2 orneklerini temsil eder; "
+        "kesintisiz uydu raster haritasi degildir."
     )
+
 
 # IYILESME
 with tab2:
