@@ -180,7 +180,6 @@ m.fit_bounds([
     [filtered["enlem"].min(), filtered["boylam"].min()],
     [filtered["enlem"].max(), filtered["boylam"].max()]
 ])
-
     st_folium(
         m,
         height=550,
