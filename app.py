@@ -208,7 +208,8 @@ with tab2:
         ]
     }).set_index("Yıl")
 
-    st.line_chart(trend)
+trend.index = trend.index.astype(str)
+st.line_chart(trend)
     st.dataframe(trend)
 
 # MODEL
@@ -240,7 +241,7 @@ with tab4:
     if climate_path.exists():
         climate = pd.read_csv(climate_path)
         climate = climate.set_index("yil")
-
+        climate.index = climate.index.astype(str)
         st.subheader("Ortalama Sıcaklık (°C)")
         st.line_chart(climate["sicaklik_C"])
 
